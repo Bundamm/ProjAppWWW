@@ -1,0 +1,214 @@
+*{
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+body{
+    background-image: url("../img/background.png");
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+
+ul {
+    margin: 10px;
+    padding: 0;
+    overflow: hidden;
+    display: inline-block;
+}
+
+li {
+    list-style-type: none;
+}
+
+li a{
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+a:hover{
+    background-color: rgba(54, 54, 54, 0.7);
+}
+
+header {
+    text-align: center;
+    background-color: rgba(83, 82, 148, 0.9);
+    margin: 0;
+    padding: 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid black;
+    text-shadow: 0 0 5px;
+}
+
+
+.content {
+    background-color: rgba(83, 82, 148, 0.9);
+    margin: 100px;
+    padding: 10px;
+    height: auto;
+    border-radius: 25px;
+    border: 2px solid black;
+    overflow: hidden;
+    font-size: large;
+    font-weight: 500;
+}
+
+a {
+    text-decoration: none;
+}
+
+p {
+    text-align: justify;
+}
+
+img{
+    width: 300px;
+    height: auto;
+    border: 2px solid black;
+    border-radius: 25px;
+    box-shadow: 0 0 5px black;
+    margin: 5px;
+}
+
+.img1 {
+    margin-bottom: 100px;
+}
+
+.img1 img {
+    float: left;
+}
+
+.img2 {
+    margin-bottom: 100px;
+}
+.img2 img {
+    float: right;
+}
+
+.img3 {
+    margin-top: 150px;
+}
+.img3 img {
+    float: left;
+}
+h2 {
+    text-align: center;
+    margin: 10px;
+}
+
+footer {
+    text-align: center;
+    background-color: rgba(83, 82, 148, 0.9);
+    height: 30px;
+    border-top: 2px solid black;
+}
+#oath {
+    width: 180px;
+    height: auto;
+}
+form input,textarea,button {
+    color: black;
+}
+form input {
+    width: 200px;
+}
+form textarea {
+    width: 100%;
+    height: 100px;
+}
+form button {
+    height: 25px;
+}
+button {
+    padding: 5px;
+    background-color: rgba(83, 82, 148);
+    color: white;
+    border-radius: 25px;
+}
+button:hover {
+    background-color: rgba(54, 54, 54, 0.7);
+}
+.tabelka table{
+    
+    align-items: center;
+    margin: 0 auto;
+}
+
+.logowanie {
+    display: grid;
+    align-items: center;
+}
+
+.podstrony {
+    display: grid;
+   margin: 10px;
+   background-color: rgba(72, 69, 146, 0.8);
+   border-radius: 25px;
+   border: 2px solid black;
+   align-items: center;
+}
+.lista_stron {
+    text-align: center;
+}
+
+.edit-button {
+    padding: 5px;
+    background-color: rgb(25, 123, 28);
+    color: white;
+    border-radius: 25px;
+    padding: 10px;
+    height: 10px;
+    margin: 10px;
+}
+
+.delete-button {
+    padding: 10px;
+    background-color: rgb(172, 35, 35);
+    color: white;
+    border-radius: 25px;
+}
+.edit-button:hover {
+    background-color: rgba(42, 107, 58, 0.7);
+}
+.delete-button:hover {
+    background-color: rgba(107, 42, 42, 0.7);
+}
+tr {
+
+}
+tr>td {
+    padding: 1em;
+}
+.el_listy {
+    text-align: center;
+}
+.column_names {
+    margin-bottom: 20px;
+}
+.create_page {
+    text-align: center;
+    width: 30%;
+    border-radius: 25px;
+    margin: 10px;
+    padding: 5px;
+    background-color: rgba(83, 82, 148);
+    color: white;
+    border-radius: 25px;
+}
+
+.send-button {
+    padding: 5px;
+    background-color: rgba(83, 82, 148);
+    color: white;
+    border-radius: 25px;
+}
+
