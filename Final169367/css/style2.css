@@ -1,0 +1,184 @@
+/* Variables */
+:root {
+    --primary-bg: rgba(50, 50, 100, 0.9);
+    --secondary-bg: rgba(83, 82, 148, 0.9);
+    --hover-color: rgba(200, 200, 255, 0.9);
+    --input-bg: rgba(30, 30, 70, 0.9);
+    --input-border: rgba(200, 200, 255, 0.3);
+    --spacing-sm: 10px;
+    --spacing-md: 20px;
+    --shadow-sm: 0 0 5px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+body {
+    background-color: #FFFFFF;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: white;
+}
+
+/* Base Styles */
+html {
+    height: 100%;
+}
+
+/* Header and Navigation */
+header {
+    background-color: var(--secondary-bg);
+    text-align: center;
+    padding: var(--spacing-sm) 0;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
+
+nav {
+    position: relative;
+    z-index: 100;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+nav ul li {
+    position: relative;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: var(--spacing-sm);
+    display: block;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: var(--hover-color);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--secondary-bg);
+    min-width: 160px;
+    box-shadow: var(--shadow-lg);
+    z-index: 101;
+}
+
+
+.dropdown-content a {
+    padding: var(--spacing-sm);
+    display: block;
+    text-align: left;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Main Content */
+.content {
+    flex: 1;
+    margin: 30px auto;
+    width: fit-content;
+    min-width: 300px;
+    max-width: 1200px;
+    padding: 30px var(--spacing-md);
+    background-color: var(--primary-bg);
+    border-radius: 5px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    z-index: 1;
+}
+
+/* Form Elements */
+.form {
+    background-color: var(--secondary-bg);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    margin: var(--spacing-md) 0;
+}
+
+button, .button {
+    padding: 10px 20px;
+    background-color: var(--secondary-bg);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover, .button:hover {
+    background-color: var(--hover-color);
+}
+
+/* Test Blocks */
+.test-block {
+    padding: var(--spacing-md);
+    text-align: center;
+    border-radius: 8px;
+    margin: var(--spacing-md) 0;
+    background-color: var(--secondary-bg);
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid black;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    margin: var(--spacing-sm) 0;
+}
+
+/* Footer */
+footer {
+    background-color: var(--secondary-bg);
+    text-align: center;
+    padding: var(--spacing-sm) 0;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    margin-top: auto;
+}
+
+/* Clock and Date */
+#zegarek, #data {
+    text-align: center;
+    margin: var(--spacing-sm);
+}
+
+/* Edit Container */
+.edit-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 30px;
+    background-color: var(--primary-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+}
+
+#edit_content {
+    width: 100%;
+    min-height: 500px;
+}

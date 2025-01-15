@@ -291,7 +291,7 @@ class Products {
 
     /*
      * Generuje i zwraca listę wszystkich produktów
-     * 
+     * ListaProduktow()
      * Wyświetla produkty w formie tabeli z możliwością edycji i usuwania.
      * Pokazuje zdjęcia, szczegóły produktów oraz przyciski akcji.
      */
@@ -415,6 +415,7 @@ class Products {
     }
 
     /*
+    * SprawdzDostepnosc($product)
      * Sprawdza dostępność produktu
      * 
      * Sprawdza czy produkt jest dostępny na podstawie:
@@ -430,6 +431,7 @@ class Products {
     }
 
     /*
+    * PokazProdukty()
      * Wyświetla panel zarządzania produktami
      * Główna funkcja wyświetlająca panel produktów.
      * Obsługuje różne akcje (dodawanie, edycja, usuwanie)
@@ -442,7 +444,7 @@ class Products {
         if($status_login == 1) {
             echo '<h3 class="h3-admin">Panel Produktów</h3>';
             echo '<div class="return-btn">';
-            echo '<a href="?idp=-1">Powrót do Panelu Admina</a>';
+            echo '<a href="?idp=-1" class="button">Powrót do Panelu Admina</a>';
             echo '</div>';
             
             // Obsługa różnych akcji
