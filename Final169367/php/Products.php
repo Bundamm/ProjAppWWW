@@ -34,7 +34,38 @@ class Products {
             // Obsługa przesyłania zdjęcia
             $zdjecie = null;
             if(isset($_FILES['zdjecie']) && $_FILES['zdjecie']['error'] === UPLOAD_ERR_OK) {
-                $zdjecie = file_get_contents($_FILES['zdjecie']['tmp_name']);
+                try {
+                    // Sprawdzenie typu pliku
+                    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                    $fileType = mime_content_type($_FILES['zdjecie']['tmp_name']);
+                    
+                    if (!in_array($fileType, $allowedTypes)) {
+                        throw new Exception('Niedozwolony typ pliku. Dozwolone są tylko obrazy JPEG, PNG i GIF.');
+                    }
+
+                    // Sprawdzenie rozmiaru pliku (max 60KB)
+                    if ($_FILES['zdjecie']['size'] > 60 * 1024) {
+                        throw new Exception('Plik jest zbyt duży. Maksymalny rozmiar to 60KB.');
+                    }
+
+                    // Konwersja obrazu do formatu JPEG z kompresją
+                    $sourceImage = imagecreatefromstring(file_get_contents($_FILES['zdjecie']['tmp_name']));
+                    if ($sourceImage === false) {
+                        throw new Exception('Nie udało się przetworzyć obrazu.');
+                    }
+
+                    // Tworzenie bufora dla JPEG
+                    ob_start();
+                    imagejpeg($sourceImage, null, 75); // 75 to jakość kompresji
+                    $zdjecie = ob_get_contents();
+                    ob_end_clean();
+                    
+                    imagedestroy($sourceImage);
+
+                } catch (Exception $e) {
+                    echo '<div class="error">Błąd podczas przetwarzania zdjęcia: ' . $e->getMessage() . '</div>';
+                    return;
+                }
             }
             
             $query = "INSERT INTO products (tytul, opis, data_utworzenia, data_modyfikacji, data_wygasniecia, 
@@ -42,7 +73,7 @@ class Products {
                      gabaryt_produktu, zdjecie) VALUES (?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $conn->prepare($query);
-            $stmt->bind_param("sssdiiiiib", $tytul, $opis, $data_wygasniecia, $cena_netto, 
+            $stmt->bind_param("sssdiiiiis", $tytul, $opis, $data_wygasniecia, $cena_netto, 
                             $podatek_vat, $ilosc_dostepnych, $status_dostepnosci, $kategoria, 
                             $gabaryt_produktu, $zdjecie);
             
@@ -133,74 +164,48 @@ class Products {
     }
 
     /**
-     * EdytujProdukt - Edytuje istniejący produkt
+     * EdytujProdukt - Edytuje istniejący produkt w bazie danych
      * 
-     * Funkcja wyświetla formularz edycji produktu i obsługuje jego aktualizację.
-     * Zapisuje zmiany w danych produktu do bazy danych.
-     * Dostępna tylko dla zalogowanych administratorów.
+     * Ta funkcja pozwala na edycję istniejącego produktu. Sprawdza uprawnienia użytkownika,
+     * obsługuje aktualizację danych produktu, w tym przesyłanie nowego zdjęcia,
+     * oraz wyświetla formularz edycji z aktualnymi danymi produktu.
      */
     function EdytujProdukt() {
-        // Tworzy nowy obiekt klasy Admin do zarządzania uprawnieniami
-        $Admin = new Admin(); 
-        // Weryfikuje czy użytkownik ma uprawnienia administratora
-        $status_login = $Admin->CheckLogin(); 
-        if($status_login != 1) {
-            // Wyświetla formularz logowania dla nieuprawnionych użytkowników
-            echo $Admin->FormularzLogowania(); 
+        // Sprawdzenie uprawnień administratora
+        $Admin = new Admin();
+        if($Admin->CheckLogin() != 1) {
+            echo $Admin->FormularzLogowania();
             return;
         }
 
         global $conn;
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
         
-        // Sprawdza, czy formularz aktualizacji został wysłany
+        // Obsługa formularza aktualizacji produktu
         if(isset($_POST['update'])) {
-            // Pobiera i przetwarza dane z formularza
-            $id = intval($_POST['id']);
-            $tytul = mysqli_real_escape_string($conn, $_POST['tytul']);
-            $opis = mysqli_real_escape_string($conn, $_POST['opis']);
-            $cena_netto = floatval($_POST['cena_netto']);
-            $podatek_vat = intval($_POST['podatek_vat']);
-            $ilosc_dostepnych = intval($_POST['ilosc_dostepnych']);
-            $status_dostepnosci = intval($_POST['status_dostepnosci']);
-            $kategoria = intval($_POST['kategoria']);
-            $gabaryt_produktu = intval($_POST['gabaryt_produktu']);
-            $data_wygasniecia = date('Y-m-d H:i:s', strtotime($_POST['data_wygasniecia']));
+            try {
+                // Przygotowanie podstawowych danych produktu
+                $params = [
+                    mysqli_real_escape_string($conn, $_POST['tytul']),
+                    mysqli_real_escape_string($conn, $_POST['opis']),
+                    date('Y-m-d H:i:s', strtotime($_POST['data_wygasniecia'])),
+                    floatval($_POST['cena_netto']),
+                    intval($_POST['podatek_vat']),
+                    intval($_POST['ilosc_dostepnych']),
+                    intval($_POST['status_dostepnosci']),
+                    intval($_POST['kategoria']),
+                    intval($_POST['gabaryt_produktu'])
+                ];
+                
+                // Przygotowanie zapytania SQL do aktualizacji
+                $query = "UPDATE products SET 
+                         tytul=?, opis=?, data_modyfikacji=NOW(), data_wygasniecia=?,
+                         cena_netto=?, podatek_vat=?, ilosc_dostepnych=?,
+                         status_dostepnosci=?, kategoria=?, gabaryt_produktu=?";
+                $types = "sssdiiiii";
 
-            // Sprawdzenie czy przesłano nowe zdjęcie
-            $hasNewImage = isset($_FILES['zdjecie']) && 
-                          $_FILES['zdjecie']['error'] === UPLOAD_ERR_OK && 
-                          !empty($_FILES['zdjecie']['tmp_name']);
-
-            // Przygotowanie podstawowego zapytania SQL
-            $query = "UPDATE products SET 
-                     tytul=?, 
-                     opis=?, 
-                     data_modyfikacji=NOW(), 
-                     data_wygasniecia=?, 
-                     cena_netto=?, 
-                     podatek_vat=?, 
-                     ilosc_dostepnych=?, 
-                     status_dostepnosci=?, 
-                     kategoria=?, 
-                     gabaryt_produktu=?";
-
-            // Inicjalizacja parametrów
-            $params = [
-                $tytul, 
-                $opis, 
-                $data_wygasniecia, 
-                $cena_netto, 
-                $podatek_vat, 
-                $ilosc_dostepnych, 
-                $status_dostepnosci, 
-                $kategoria, 
-                $gabaryt_produktu
-            ];
-            $types = "sssdiiiii";
-
-            // Dodanie obsługi zdjęcia do zapytania
-            if ($hasNewImage) {
-                try {
+                // Obsługa przesyłania nowego zdjęcia
+                if(isset($_FILES['zdjecie']) && $_FILES['zdjecie']['error'] === UPLOAD_ERR_OK) {
                     // Sprawdzenie typu pliku
                     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
                     $fileType = mime_content_type($_FILES['zdjecie']['tmp_name']);
@@ -209,155 +214,138 @@ class Products {
                         throw new Exception('Niedozwolony typ pliku. Dozwolone są tylko obrazy JPEG, PNG i GIF.');
                     }
 
-                    // Sprawdzenie rozmiaru pliku (max 5MB)
-                    if ($_FILES['zdjecie']['size'] > 5 * 1024 * 1024) {
-                        throw new Exception('Plik jest zbyt duży. Maksymalny rozmiar to 5MB.');
+                    // Sprawdzenie rozmiaru pliku nie moze przekraczac 60KB
+                    if ($_FILES['zdjecie']['size'] > 60 * 1024) {
+                        throw new Exception('Plik jest zbyt duży. Maksymalny rozmiar to 60KB.');
                     }
 
-                    // Konwersja obrazu do formatu JPEG
+                    // Przetwarzanie obrazu
                     $sourceImage = imagecreatefromstring(file_get_contents($_FILES['zdjecie']['tmp_name']));
-                    if ($sourceImage === false) {
+                    if (!$sourceImage) {
                         throw new Exception('Nie udało się przetworzyć obrazu.');
                     }
 
-                    // Tworzenie bufora dla JPEG
+                    // Kompresja i zapisanie obrazu
                     ob_start();
-                    imagejpeg($sourceImage, null, 85); // 85 to jakość kompresji
+                    imagejpeg($sourceImage, null, 75);
                     $imageData = ob_get_contents();
                     ob_end_clean();
-                    
                     imagedestroy($sourceImage);
 
-                    // Dodanie zdjęcia do zapytania
+                    // Dodanie zdjęcia do zapytania SQL
                     $query .= ", zdjecie=?";
+                    $types .= "s";
                     $params[] = $imageData;
-                    $types .= "b";
-                } catch (Exception $e) {
-                    echo '<div class="error">Błąd podczas przetwarzania zdjęcia: ' . $e->getMessage() . '</div>';
-                    return;
                 }
-            }
 
-            // Dodanie warunku WHERE
-            $query .= " WHERE id=?";
-            $params[] = $id;
-            $types .= "i";
+                // Dodanie ID produktu do zapytania
+                $query .= " WHERE id=?";
+                $types .= "i";
+                $params[] = $id;
 
-            // Przygotowanie i wykonanie zapytania
-            try {
+                // Wykonanie zapytania SQL
                 $stmt = $conn->prepare($query);
-                if (!$stmt) {
-                    throw new Exception("Błąd przygotowania zapytania: " . $conn->error);
-                }
-
                 $stmt->bind_param($types, ...$params);
                 
-                if (!$stmt->execute()) {
-                    throw new Exception("Błąd wykonania zapytania: " . $stmt->error);
-                }
-
-                // Sprawdzenie czy aktualizacja się powiodła
-                if ($stmt->affected_rows > 0 || !$hasNewImage) {
+                if($stmt->execute()) {
                     echo '<div class="success">Produkt został zaktualizowany pomyślnie.</div>';
-                    // Przekierowanie po krótkim opóźnieniu
                     header("refresh:2;url=index.php?idp=-12");
-                } else {
-                    echo '<div class="warning">Nie wprowadzono żadnych zmian.</div>';
                 }
-
                 $stmt->close();
+
             } catch (Exception $e) {
-                echo '<div class="error">Wystąpił błąd: ' . $e->getMessage() . '</div>';
+                echo '<div class="error">' . $e->getMessage() . '</div>';
             }
         }
 
-        // Pobierz ID produktu z URL
-        $id = isset($_GET['id']) ? intval(substr($_GET['id'], 0)) : 0;
-        if($id > 0) {
-            $query = "SELECT * FROM products WHERE id = ?";
-            $stmt = $conn->prepare($query);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        // Pobieranie danych produktu do edycji
+        $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        // Wyświetlanie formularza edycji produktu
+        if($product = $result->fetch_assoc()) {
+            echo '
+            <div class="edit-container">
+                <h3>Edytuj produkt</h3>
+                <form method="POST" action="index.php?idp=-14&id=' . $id . '" enctype="multipart/form-data" class="product-form">
+                    <input type="hidden" name="id" value="' . $id . '">
+                    <input type="hidden" name="update" value="1">
+                    
+                    <div class="form-group">
+                        <label>Tytuł:</label>
+                        <input type="text" name="tytul" value="' . htmlspecialchars($product['tytul']) . '" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Opis:</label>
+                        <textarea name="opis" required>' . htmlspecialchars($product['opis']) . '</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Cena netto:</label>
+                        <input type="number" step="0.01" name="cena_netto" value="' . $product['cena_netto'] . '" required>
+                    </div>
+                    <div class="form-group">
+                        <label>VAT (%):</label>
+                        <input type="number" name="podatek_vat" value="' . $product['podatek_vat'] . '" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ilość:</label>
+                        <input type="number" name="ilosc_dostepnych" value="' . $product['ilosc_dostepnych'] . '" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status dostępności:</label>
+                        <select name="status_dostepnosci">
+                            <option value="1"' . ($product['status_dostepnosci'] == 1 ? ' selected' : '') . '>Dostępny</option>
+                            <option value="0"' . ($product['status_dostepnosci'] == 0 ? ' selected' : '') . '>Niedostępny</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategoria:</label>
+                        <select name="kategoria">';
+            // Wyświetlenie listy kategorii
+            $this->WyswietlKategorie($product['kategoria']);
+            echo '</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Gabaryt:</label>
+                        <select name="gabaryt_produktu">
+                            <option value="1"' . ($product['gabaryt_produktu'] == 1 ? ' selected' : '') . '>Mały</option>
+                            <option value="2"' . ($product['gabaryt_produktu'] == 2 ? ' selected' : '') . '>Średni</option>
+                            <option value="3"' . ($product['gabaryt_produktu'] == 3 ? ' selected' : '') . '>Duży</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data wygaśnięcia:</label>
+                        <input type="datetime-local" name="data_wygasniecia" value="' . 
+                        date('Y-m-d\TH:i', strtotime($product['data_wygasniecia'])) . '" required>
+                    </div>';
             
-            if($product = $result->fetch_assoc()) {
-                echo '
-                <div class="edit-container">
-                    <h3 class="edit-title">Edytuj produkt</h3>
-                    <form method="POST" action="index.php?idp=-14&id=' . $product['id'] . '" enctype="multipart/form-data" class="product-form">
-                        <input type="hidden" name="id" value="' . $product['id'] . '">
-                        <input type="hidden" name="update" value="1">
-                        <div class="form-group">
-                            <label for="tytul">Tytuł:</label>
-                            <input type="text" id="tytul" name="tytul" value="' . htmlspecialchars($product['tytul']) . '" maxlength="255" required>
+            // Wyświetlenie aktualnego zdjęcia produktu
+            if($product['zdjecie']) {
+                echo '<div class="form-group">
+                        <label>Aktualne zdjęcie:</label>
+                        <div class="current-image">
+                            <img src="data:image/jpeg;base64,' . base64_encode($product['zdjecie']) . '" style="max-width:200px;">
                         </div>
-                        <div class="form-group">
-                            <label for="opis">Opis:</label>
-                            <textarea id="opis" name="opis" required>' . htmlspecialchars($product['opis']) . '</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="cena_netto">Cena netto:</label>
-                            <input type="number" id="cena_netto" step="0.01" name="cena_netto" value="' . $product['cena_netto'] . '" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="podatek_vat">VAT (%):</label>
-                            <input type="number" id="podatek_vat" name="podatek_vat" value="' . $product['podatek_vat'] . '" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="ilosc_dostepnych">Ilość:</label>
-                            <input type="number" id="ilosc_dostepnych" name="ilosc_dostepnych" value="' . $product['ilosc_dostepnych'] . '" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="status_dostepnosci">Status dostępności:</label>
-                            <select id="status_dostepnosci" name="status_dostepnosci">
-                                <option value="1"' . ($product['status_dostepnosci'] == 1 ? ' selected' : '') . '>Dostępny</option>
-                                <option value="0"' . ($product['status_dostepnosci'] == 0 ? ' selected' : '') . '>Niedostępny</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="kategoria">Kategoria:</label>
-                            <select id="kategoria" name="kategoria">
-                ';
-                $this->WyswietlKategorie($product['kategoria']);
-                echo '</select>
-                </div>
-                <div class="form-group">
-                    <label for="gabaryt_produktu">Gabaryt:</label>
-                    <select id="gabaryt_produktu" name="gabaryt_produktu">
-                        <option value="1"' . ($product['gabaryt_produktu'] == 1 ? ' selected' : '') . '>Mały</option>
-                        <option value="2"' . ($product['gabaryt_produktu'] == 2 ? ' selected' : '') . '>Średni</option>
-                        <option value="3"' . ($product['gabaryt_produktu'] == 3 ? ' selected' : '') . '>Duży</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="data_wygasniecia">Data wygaśnięcia:</label>
-                    <input type="datetime-local" id="data_wygasniecia" name="data_wygasniecia" value="' . 
-                    date('Y-m-d\TH:i', strtotime($product['data_wygasniecia'])) . '" required>
-                </div>
-                <div class="form-group">
-                    <label>Aktualne zdjęcie:</label>';
-                if($product['zdjecie']) {
-                    echo '<div class="current-image"><img src="data:image/jpeg;base64,' . base64_encode($product['zdjecie']) . '" style="max-width:200px;"></div>';
-                }
-                echo '
-                </div>
-                <div class="form-group">
-                    <label for="zdjecie">Nowe zdjęcie:</label>
-                    <input type="file" id="zdjecie" name="zdjecie" accept="image/*">
-                </div>
-                <div class="form-actions">
-                    <input type="submit" name="update" value="Aktualizuj produkt" class="button edit">
-                    <a href="?idp=-12" class="button cancel">Anuluj</a>
-                </div>
-            </form>
-        </div>';
-            } else {
-                echo '<div class="error">Nie znaleziono produktu.</div>';
+                    </div>';
             }
-            $stmt->close();
+            
+            // Pole do przesłania nowego zdjęcia
+            echo '<div class="form-group">
+                        <label>Nowe zdjęcie:</label>
+                        <input type="file" name="zdjecie" accept="image/*">
+                    </div>
+                    <div class="form-actions">
+                        <input type="submit" name="update" value="Aktualizuj produkt" class="button edit">
+                        <a href="?idp=-12" class="button cancel">Anuluj</a>
+                    </div>
+                </form>
+            </div>';
         } else {
-            echo '<div class="error">Nieprawidłowe ID produktu.</div>';
+            echo '<div class="error">Nie znaleziono produktu.</div>';
         }
+        $stmt->close();
     }
 
     /**
