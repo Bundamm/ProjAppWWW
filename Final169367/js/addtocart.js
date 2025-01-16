@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    /**
+    /*
      * Aktualizuje licznik produktów w koszyku.
      */
     function updateCartCounter() {

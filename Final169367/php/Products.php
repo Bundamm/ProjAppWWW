@@ -412,7 +412,7 @@ class Products {
         }
         
         // Dodawanie skryptu JavaScript i rozpoczynanie kontenera listy produktów
-        $output = '<script src="js/product-quantity.js"></script>';
+        $output = '<script src="js/cart.js"></script>';
         $output .= '<div class="product-list-container">';
         
         // Przygotowywanie zapytania SQL do pobrania produktów wraz z nazwami kategorii
