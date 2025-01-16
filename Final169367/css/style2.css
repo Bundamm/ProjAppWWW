@@ -1,4 +1,4 @@
-/* Variables */
+/* Zmienne */
 :root {
     --primary-bg: rgba(50, 50, 100, 0.9);
     --secondary-bg: rgba(83, 82, 148, 0.9);
@@ -27,12 +27,12 @@ body {
     color: white;
 }
 
-/* Base Styles */
+
 html {
     height: 100%;
 }
 
-/* Header and Navigation */
+/* Header i nawigacja */
 header {
     background-color: var(--secondary-bg);
     text-align: center;
@@ -96,7 +96,7 @@ nav ul li a:hover {
     display: block;
 }
 
-/* Main Content */
+/* Main Div */
 .content {
     flex: 1;
     margin: 30px auto;
@@ -111,7 +111,7 @@ nav ul li a:hover {
     z-index: 1;
 }
 
-/* Form Elements */
+/* Formularz */
 .form {
     background-color: var(--secondary-bg);
     padding: var(--spacing-md);
@@ -132,23 +132,13 @@ button:hover, .button:hover {
     background-color: var(--hover-color);
 }
 
-/* Test Blocks */
+/* Test */
 .test-block {
     padding: var(--spacing-md);
     text-align: center;
     border-radius: 8px;
     margin: var(--spacing-md) 0;
     background-color: var(--secondary-bg);
-}
-
-/* Images */
-img {
-    max-width: 100%;
-    height: auto;
-    border: 2px solid black;
-    border-radius: 8px;
-    box-shadow: var(--shadow-sm);
-    margin: var(--spacing-sm) 0;
 }
 
 /* Footer */
@@ -161,24 +151,8 @@ footer {
     margin-top: auto;
 }
 
-/* Clock and Date */
+/* Zegar i data */
 #zegarek, #data {
     text-align: center;
     margin: var(--spacing-sm);
-}
-
-/* Edit Container */
-.edit-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 30px;
-    background-color: var(--primary-bg);
-    border-radius: 8px;
-    box-shadow: var(--shadow-lg);
-}
-
-#edit_content {
-    width: 100%;
-    min-height: 500px;
 }
