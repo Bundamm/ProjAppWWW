@@ -184,7 +184,7 @@
         <?php
         $nr_indeksu = '169367';
         $nrGrupy = '4';
-        $wersja = '1.12';
+        $wersja = '1.12.2';
 
         echo 'Autor: Tomasz Szewa '.$nr_indeksu.' grupa '.$nrGrupy.' wersja '.$wersja.'<br/><br/>';
         ?>

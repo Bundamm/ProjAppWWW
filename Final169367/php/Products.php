@@ -284,7 +284,7 @@ class Products {
                 echo '
                 <div class="edit-container">
                     <h3 class="edit-title">Edytuj produkt</h3>
-                    <form method="POST" action="index.php?idp=-12" enctype="multipart/form-data" class="product-form">
+                    <form method="POST" action="index.php?idp=-14&id=' . $product['id'] . '" enctype="multipart/form-data" class="product-form">
                         <input type="hidden" name="id" value="' . $product['id'] . '">
                         <input type="hidden" name="update" value="1">
                         <div class="form-group">
